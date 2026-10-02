@@ -5,7 +5,7 @@ import './globals.css'
 export const metadata: Metadata = {
   title: 'LaunchReady AI | Mission Review Control',
   description: 'Traceable pre-flight mission review and decision support for rocket engineering teams.',
-  generator: 'v0.app',
+  
   icons: {
     icon: [
       {
@@ -26,9 +26,9 @@ export const metadata: Metadata = {
 }
 
 export const viewport: Viewport = {
-  colorScheme: 'light dark',
+  colorScheme: 'dark',
   themeColor: [
-    { media: '(prefers-color-scheme: light)', color: 'white' },
+    { media: '(prefers-color-scheme: light)', color: '#080a10' },
     { media: '(prefers-color-scheme: dark)', color: 'black' },
   ],
 }
