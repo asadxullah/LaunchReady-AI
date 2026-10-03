@@ -1,19 +1,10 @@
-import { findings, mission } from '../../../lib/mission'
-
-// Server-side integration point. Set LAUNCHREADY_AI_CHAT_URL to your team's AI API.
-export async function POST(request: Request) {
-  const endpoint = process.env.LAUNCHREADY_AI_CHAT_URL
-  if (!endpoint) return Response.json({ error: 'AI backend is not configured. Use Demo templates, or set LAUNCHREADY_AI_CHAT_URL on the server.' }, { status: 503 })
-  try {
-    const text = await request.text()
-    if (text.length > 6000) return Response.json({ error: 'Request is too large.' }, { status: 413 })
-    let body
-    try { body = JSON.parse(text) } catch { return Response.json({ error: 'Invalid JSON request.' }, { status: 400 }) }
-    if (!body || typeof body.question !== 'string' || !body.question.trim() || body.question.length > 1500 || body.missionId !== mission.id || (body.findingId != null && !findings.some(f => f.id === body.findingId))) return Response.json({ error: 'Invalid mission, finding, or question.' }, { status: 400 })
-    const upstream = await fetch(endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json', ...(process.env.LAUNCHREADY_AI_API_TOKEN ? { Authorization: `Bearer ${process.env.LAUNCHREADY_AI_API_TOKEN}` } : {}) }, body: JSON.stringify({ question: body.question, missionId: mission.id, findingId: body.findingId ?? null, findings }), signal: AbortSignal.timeout(20000), cache: 'no-store' })
-    if (!upstream.ok) return Response.json({ error: 'AI backend unavailable. Retry or use Demo templates.' }, { status: 502 })
-    const result = await upstream.json()
-    if (typeof result.answer !== 'string' || !result.answer.trim() || result.answer.length > 12000 || !Array.isArray(result.citations) || result.citations.length > 20 || result.citations.some((id: unknown) => typeof id !== 'string' || !findings.some(f => f.id === id))) return Response.json({ error: 'AI response contained unsupported content or citations.' }, { status: 502 })
-    return Response.json({ answer: result.answer, citations: [...new Set(result.citations)] })
-  } catch { return Response.json({ error: 'AI request failed or timed out. Retry or use Demo templates.' }, { status: 502 }) }
-}
+import { randomUUID } from 'node:crypto'
+import { owner, failure, ok, jsonBody, HttpError } from '@/lib/server/http'
+import { rateLimit } from '@/lib/server/db'
+import { chatSchema } from '@/lib/server/schema'
+import { answerQuestion,getReview,getChats,saveChat } from '@/lib/server/reviews'
+import type { StoredChat } from '@/lib/contracts'
+export const runtime='nodejs'
+export const maxDuration=60
+export async function GET(request:Request){try{const id=new URL(request.url).searchParams.get('reviewId');if(!id)throw new HttpError(400,'Review ID is required.');return ok(await getChats(id,await owner()))}catch(e){return failure(e)}}
+export async function POST(request:Request){try{const input=chatSchema.parse(await jsonBody(request));const key=await owner(),r=await getReview(input.reviewId,key);if(r.status!=='COMPLETE')throw new HttpError(409,'Finish the review before asking questions.');if(input.findingId&&!r.findings.some(f=>f.id===input.findingId))throw new HttpError(404,'Context finding not found.');await rateLimit(key,'chat',30);await rateLimit('GLOBAL','chat',200);const history=await getChats(r.id,key);const answer=await answerQuestion(r,input.question,input.findingId??undefined,history);const user:StoredChat={id:randomUUID(),role:'user',text:input.question,citations:[],chunkIds:[],mode:'You',at:new Date().toISOString()};const assistant:StoredChat={id:randomUUID(),role:'assistant',text:answer.answer,citations:answer.citations,chunkIds:answer.chunkIds,mode:answer.mode,...('failure' in answer?{failure:answer.failure}:{}),at:new Date(Date.now()+1).toISOString()};await saveChat(r.id,[user,assistant]);return ok({...answer,messages:[user,assistant]})}catch(e){return failure(e)}}

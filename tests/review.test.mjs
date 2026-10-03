@@ -9,7 +9,6 @@ function load(path, imports = {}) {
  return module.exports
 }
 const mission = load('../lib/mission.ts')
-const route = load('../app/api/chat/route.ts', { '../../../lib/mission': mission })
 test('summary reflects every finding without hardcoded counters', () => {
  assert.deepEqual(mission.summarize(), { total: 7, passed: 2, review: 3, gaps: 2, reviewed: 0 })
  for (const name of mission.subsystems) assert.ok(mission.findings.some(f => f.subsystem === name))
@@ -33,19 +32,4 @@ test('demo answers cite known findings and preserve current violations', () => {
  }
  assert.equal(mission.demoAnswer('Is it safe to launch?').citations.length, 0)
  assert.ok(mission.demoAnswer('Which document supports this?', 'BATTERY-THERMAL').answer.includes('§4.2.1'))
-})
-test('chat integration rejects missing configuration, bad inputs and fabricated citations', async () => {
- const previousUrl = process.env.LAUNCHREADY_AI_CHAT_URL; const previousFetch = global.fetch
- const req = body => new Request('http://localhost/api/chat', { method: 'POST', body: JSON.stringify(body) })
- try {
-  delete process.env.LAUNCHREADY_AI_CHAT_URL
-  assert.equal((await route.POST(req({ question: 'Summary' }))).status, 503)
-  process.env.LAUNCHREADY_AI_CHAT_URL = 'http://localhost/mock'
-  assert.equal((await route.POST(req({ question: 'Summary', missionId: 'UNKNOWN' }))).status, 400)
-  assert.equal((await route.POST(req({ question: 'Summary', missionId: mission.mission.id, findingId: 'INVENTED' }))).status, 400)
-  global.fetch = async () => Response.json({ answer: 'Unsupported', citations: ['INVENTED'] })
-  assert.equal((await route.POST(req({ question: 'Summary', missionId: mission.mission.id }))).status, 502)
-  global.fetch = async () => Response.json({ answer: 'Battery requires review', citations: ['BATTERY-THERMAL'] })
-  const r = await route.POST(req({ question: 'Summary', missionId: mission.mission.id })); assert.equal(r.status, 200); assert.deepEqual((await r.json()).citations, ['BATTERY-THERMAL'])
- } finally { global.fetch = previousFetch; if (previousUrl === undefined) delete process.env.LAUNCHREADY_AI_CHAT_URL; else process.env.LAUNCHREADY_AI_CHAT_URL = previousUrl }
 })

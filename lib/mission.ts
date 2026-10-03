@@ -1,5 +1,5 @@
 export type Evaluation = 'CHECK_PASSED' | 'REVIEW_REQUIRED' | 'MISSING_EVIDENCE'
-export type Diff = 'NEW' | 'RESOLVED' | 'CHANGED' | 'UNRESOLVED'
+export type Diff = 'NEW' | 'RESOLVED' | 'CHANGED' | 'UNRESOLVED' | 'UNCHANGED' | 'NOT_COMPARABLE'
 export type Disposition = 'PENDING' | 'ACKNOWLEDGED' | 'NEEDS_ACTION' | 'DISMISSED_WITH_NOTE'
 export interface ReviewNote { state: Disposition; note: string; savedAt: string }
 export type ReviewNotes = Record<string, ReviewNote>
@@ -12,6 +12,7 @@ export interface Finding {
   confidence: 'HIGH' | 'MEDIUM' | 'LOW'; confidenceReasons: string[]
   series: { time: string; value: number }[]; source: Source | null
   impact: string; action: string; gap: boolean
+  lowerLimit?: number | null; flags?: string[]; windowMinutes?: number; ruleLabel?: string; comparable?: boolean; stillOpen?: boolean; requirementVersion?: string; rawDirection?: string; absoluteChange?: number | null; percentageChange?: number | null
 }
 export const mission = {
   id: 'ASTER-2-R2', name: 'Aster-2', review: 'Review #02', baseline: 'Review #01',

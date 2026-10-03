@@ -1,0 +1,5 @@
+import { mkdirSync,writeFileSync } from 'node:fs'
+import { demoPackage } from '../lib/server/demo'
+const p=demoPackage();mkdirSync('samples/documents',{recursive:true});writeFileSync('samples/mission-package.json',JSON.stringify(p,null,2)+'\n');const headers=['id','item_id','test_id','timestamp','value','unit','configuration_version','test_condition','valid'] as const;const quote=(v:unknown)=>`"${String(v).replaceAll('"','""')}"`;writeFileSync('samples/observations.csv',headers.join(',')+'\n'+p.observations.map(o=>headers.map(k=>quote(o[k])).join(',')).join('\n')+'\n');for(const d of p.documents)writeFileSync(`samples/documents/${d.id}.md`,d.content)
+writeFileSync('samples/README.md','Upload mission-package.json alone for a complete package. observations.csv can replace its observations; documents/*.md can replace document content. All numeric limits and records are simulated.\n')
+console.log(`Wrote ${p.requirements.length} requirements, ${p.observations.length} observations, ${p.checklists.length} checklist entries and ${p.documents.length} documents.`)

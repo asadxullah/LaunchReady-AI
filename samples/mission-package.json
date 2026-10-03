@@ -1,0 +1,1747 @@
+{
+  "schema_version": "1",
+  "mission": {
+    "id": "ASTER-2",
+    "name": "Aster-2",
+    "configuration_version": "demo-v1",
+    "timestamp": "2026-10-02T14:30:00Z",
+    "simulated": true
+  },
+  "requirements": [
+    {
+      "id": "REQ-BATTERY-THERMAL",
+      "item_id": "BATTERY-THERMAL",
+      "version": "1",
+      "title": "Battery temperature crossed its limit",
+      "subsystem": "AVIONICS",
+      "parameter": "BATTERY-THERMAL",
+      "operator": "LTE",
+      "upper": 45,
+      "unit": "°C",
+      "priority": "HIGH",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.2,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-AVIONICS",
+        "section": "§4.2.1",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-AVIONICS"
+      ],
+      "action": "Repeat the battery thermal test and request engineering review under Demo Procedure TH-01.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-MOTOR-VIBRATION",
+      "item_id": "MOTOR-VIBRATION",
+      "version": "1",
+      "title": "Motor vibration increased within range",
+      "subsystem": "PROPULSION",
+      "parameter": "MOTOR-VIBRATION",
+      "operator": "LTE",
+      "upper": 4,
+      "unit": "mm/s",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.2,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-PROPULSION",
+        "section": "§2.3",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-PROPULSION"
+      ],
+      "action": "Continue comparable observations and obtain the optional test-context note.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-CHUTE-DEPLOY-TIME",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "version": "1",
+      "title": "Recovery deployment timing resolved",
+      "subsystem": "RECOVERY",
+      "parameter": "CHUTE-DEPLOY-TIME",
+      "operator": "LTE",
+      "upper": 2.5,
+      "unit": "s",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.2,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-RECOVERY",
+        "section": "§3.1",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-RECOVERY"
+      ],
+      "action": "Review the linked retest and acknowledge the resolved finding.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INTERSTAGE-BOND",
+      "item_id": "INTERSTAGE-BOND",
+      "version": "1",
+      "title": "Bond inspection evidence is missing",
+      "subsystem": "STRUCTURE",
+      "parameter": "INTERSTAGE-BOND",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "MEDIUM",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.2,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "§5.2",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "RECORD-INTERSTAGE-BOND"
+      ],
+      "action": "Attach the current bond inspection record and rerun the review.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-SURFACE-WIND",
+      "item_id": "SURFACE-WIND",
+      "version": "1",
+      "title": "Wind improved but remains above limit",
+      "subsystem": "ENVIRONMENT",
+      "parameter": "SURFACE-WIND",
+      "operator": "LTE",
+      "upper": 8,
+      "unit": "m/s",
+      "priority": "HIGH",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.5,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-ENVIRONMENT",
+        "section": "§6.1",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-ENVIRONMENT"
+      ],
+      "action": "Recheck conditions at the next observation cycle; retain the open finding until evidence meets the configured check.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-SENSOR-DROPOUT",
+      "item_id": "SENSOR-DROPOUT",
+      "version": "1",
+      "title": "Temperature sensor dropout needs review",
+      "subsystem": "AVIONICS",
+      "parameter": "SENSOR-DROPOUT",
+      "operator": "LTE",
+      "upper": 0,
+      "unit": "events",
+      "priority": "MEDIUM",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.2,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-AVIONICS",
+        "section": "§4.3",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-AVIONICS"
+      ],
+      "action": "Inspect the sensor record and request a comparable repeat observation.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-FIN-INSPECTION",
+      "item_id": "FIN-INSPECTION",
+      "version": "1",
+      "title": "Fin attachment inspection remains open",
+      "subsystem": "STRUCTURE",
+      "parameter": "FIN-INSPECTION",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "MEDIUM",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.2,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": null,
+      "required_document_ids": [
+        "RECORD-FIN-INSPECTION"
+      ],
+      "action": "Request the fin inspection record and the applicable procedure from the reviewer.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-AMBIENT-TEMP",
+      "item_id": "AMBIENT-TEMP",
+      "version": "1",
+      "title": "ambient temp",
+      "subsystem": "ENVIRONMENT",
+      "parameter": "AMBIENT-TEMP",
+      "operator": "LTE",
+      "upper": 40,
+      "unit": "°C",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.5,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-ENVIRONMENT",
+        "section": "AMBIENT-TEMP",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-ENVIRONMENT"
+      ],
+      "action": "Retain the test record and request engineering review if the configured limit is exceeded.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-AVIONICS-EVENT-COUNT",
+      "item_id": "AVIONICS-EVENT-COUNT",
+      "version": "1",
+      "title": "avionics event count",
+      "subsystem": "AVIONICS",
+      "parameter": "AVIONICS-EVENT-COUNT",
+      "operator": "LTE",
+      "upper": 15,
+      "unit": "events",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.5,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-AVIONICS",
+        "section": "AVIONICS-EVENT-COUNT",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-AVIONICS"
+      ],
+      "action": "Retain the test record and request engineering review if the configured limit is exceeded.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-RECOVERY-TEST-DURATION",
+      "item_id": "RECOVERY-TEST-DURATION",
+      "version": "1",
+      "title": "recovery test duration",
+      "subsystem": "RECOVERY",
+      "parameter": "RECOVERY-TEST-DURATION",
+      "operator": "LTE",
+      "upper": 12,
+      "unit": "s",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.5,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-RECOVERY",
+        "section": "RECOVERY-TEST-DURATION",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-RECOVERY"
+      ],
+      "action": "Retain the test record and request engineering review if the configured limit is exceeded.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-WIND-GUST",
+      "item_id": "WIND-GUST",
+      "version": "1",
+      "title": "wind gust",
+      "subsystem": "ENVIRONMENT",
+      "parameter": "WIND-GUST",
+      "operator": "LTE",
+      "upper": 12,
+      "unit": "m/s",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 120,
+      "material_change": 0.5,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-ENVIRONMENT",
+        "section": "WIND-GUST",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-ENVIRONMENT"
+      ],
+      "action": "Retain the test record and request engineering review if the configured limit is exceeded.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-01",
+      "item_id": "INSPECTION-01",
+      "version": "1",
+      "title": "Supporting inspection 1",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-01",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-02",
+      "item_id": "INSPECTION-02",
+      "version": "1",
+      "title": "Supporting inspection 2",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-02",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-03",
+      "item_id": "INSPECTION-03",
+      "version": "1",
+      "title": "Supporting inspection 3",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-03",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-04",
+      "item_id": "INSPECTION-04",
+      "version": "1",
+      "title": "Supporting inspection 4",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-04",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-05",
+      "item_id": "INSPECTION-05",
+      "version": "1",
+      "title": "Supporting inspection 5",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-05",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-06",
+      "item_id": "INSPECTION-06",
+      "version": "1",
+      "title": "Supporting inspection 6",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-06",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-07",
+      "item_id": "INSPECTION-07",
+      "version": "1",
+      "title": "Supporting inspection 7",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-07",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-08",
+      "item_id": "INSPECTION-08",
+      "version": "1",
+      "title": "Supporting inspection 8",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-08",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-09",
+      "item_id": "INSPECTION-09",
+      "version": "1",
+      "title": "Supporting inspection 9",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-09",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-10",
+      "item_id": "INSPECTION-10",
+      "version": "1",
+      "title": "Supporting inspection 10",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-10",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-11",
+      "item_id": "INSPECTION-11",
+      "version": "1",
+      "title": "Supporting inspection 11",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-11",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-12",
+      "item_id": "INSPECTION-12",
+      "version": "1",
+      "title": "Supporting inspection 12",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-12",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-13",
+      "item_id": "INSPECTION-13",
+      "version": "1",
+      "title": "Supporting inspection 13",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-13",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-14",
+      "item_id": "INSPECTION-14",
+      "version": "1",
+      "title": "Supporting inspection 14",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-14",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    },
+    {
+      "id": "REQ-INSPECTION-15",
+      "item_id": "INSPECTION-15",
+      "version": "1",
+      "title": "Supporting inspection 15",
+      "subsystem": "STRUCTURE",
+      "parameter": "INSPECTION-15",
+      "operator": "CHECKLIST",
+      "unit": "boolean",
+      "priority": "LOW",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "freshness_minutes": 1440,
+      "material_change": 0,
+      "trend_min_minutes": 20,
+      "trend_tolerance": 0.01,
+      "source": {
+        "document_id": "DOC-STRUCTURE",
+        "section": "Checklist",
+        "version": "1"
+      },
+      "required_document_ids": [
+        "DOC-STRUCTURE"
+      ],
+      "action": "Review the completed record and its supporting document.",
+      "demo_assumption": true
+    }
+  ],
+  "observations": [
+    {
+      "id": "BATTERY-THERMAL-1",
+      "item_id": "BATTERY-THERMAL",
+      "test_id": "TEST-BATTERY-THERMAL",
+      "timestamp": "2026-10-02T14:00:00Z",
+      "value": 41,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "BATTERY-THERMAL-2",
+      "item_id": "BATTERY-THERMAL",
+      "test_id": "TEST-BATTERY-THERMAL",
+      "timestamp": "2026-10-02T14:05:00Z",
+      "value": 42,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "BATTERY-THERMAL-3",
+      "item_id": "BATTERY-THERMAL",
+      "test_id": "TEST-BATTERY-THERMAL",
+      "timestamp": "2026-10-02T14:10:00Z",
+      "value": 43,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "BATTERY-THERMAL-4",
+      "item_id": "BATTERY-THERMAL",
+      "test_id": "TEST-BATTERY-THERMAL",
+      "timestamp": "2026-10-02T14:15:00Z",
+      "value": 44,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "BATTERY-THERMAL-5",
+      "item_id": "BATTERY-THERMAL",
+      "test_id": "TEST-BATTERY-THERMAL",
+      "timestamp": "2026-10-02T14:20:00Z",
+      "value": 45,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "BATTERY-THERMAL-6",
+      "item_id": "BATTERY-THERMAL",
+      "test_id": "TEST-BATTERY-THERMAL",
+      "timestamp": "2026-10-02T14:25:00Z",
+      "value": 46,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "BATTERY-THERMAL-7",
+      "item_id": "BATTERY-THERMAL",
+      "test_id": "TEST-BATTERY-THERMAL",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 47,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "BATTERY-THERMAL-0",
+      "item_id": "BATTERY-THERMAL",
+      "test_id": "TEST-BATTERY-THERMAL",
+      "timestamp": "2026-10-02T13:55:00Z",
+      "value": 41,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "MOTOR-VIBRATION-1",
+      "item_id": "MOTOR-VIBRATION",
+      "test_id": "TEST-MOTOR-VIBRATION",
+      "timestamp": "2026-10-02T14:00:00Z",
+      "value": 3.2,
+      "unit": "mm/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "MOTOR-VIBRATION-2",
+      "item_id": "MOTOR-VIBRATION",
+      "test_id": "TEST-MOTOR-VIBRATION",
+      "timestamp": "2026-10-02T14:05:00Z",
+      "value": 3.3,
+      "unit": "mm/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "MOTOR-VIBRATION-3",
+      "item_id": "MOTOR-VIBRATION",
+      "test_id": "TEST-MOTOR-VIBRATION",
+      "timestamp": "2026-10-02T14:10:00Z",
+      "value": 3.4,
+      "unit": "mm/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "MOTOR-VIBRATION-4",
+      "item_id": "MOTOR-VIBRATION",
+      "test_id": "TEST-MOTOR-VIBRATION",
+      "timestamp": "2026-10-02T14:15:00Z",
+      "value": 3.5,
+      "unit": "mm/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "MOTOR-VIBRATION-5",
+      "item_id": "MOTOR-VIBRATION",
+      "test_id": "TEST-MOTOR-VIBRATION",
+      "timestamp": "2026-10-02T14:20:00Z",
+      "value": 3.6,
+      "unit": "mm/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "MOTOR-VIBRATION-6",
+      "item_id": "MOTOR-VIBRATION",
+      "test_id": "TEST-MOTOR-VIBRATION",
+      "timestamp": "2026-10-02T14:25:00Z",
+      "value": 3.7,
+      "unit": "mm/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "MOTOR-VIBRATION-7",
+      "item_id": "MOTOR-VIBRATION",
+      "test_id": "TEST-MOTOR-VIBRATION",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 3.8,
+      "unit": "mm/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "MOTOR-VIBRATION-0",
+      "item_id": "MOTOR-VIBRATION",
+      "test_id": "TEST-MOTOR-VIBRATION",
+      "timestamp": "2026-10-02T13:55:00Z",
+      "value": 3.2,
+      "unit": "mm/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "CHUTE-DEPLOY-TIME-1",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "test_id": "TEST-CHUTE-DEPLOY-TIME",
+      "timestamp": "2026-10-02T14:00:00Z",
+      "value": 2.8,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "CHUTE-DEPLOY-TIME-2",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "test_id": "TEST-CHUTE-DEPLOY-TIME",
+      "timestamp": "2026-10-02T14:05:00Z",
+      "value": 2.7,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "CHUTE-DEPLOY-TIME-3",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "test_id": "TEST-CHUTE-DEPLOY-TIME",
+      "timestamp": "2026-10-02T14:10:00Z",
+      "value": 2.6,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "CHUTE-DEPLOY-TIME-4",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "test_id": "TEST-CHUTE-DEPLOY-TIME",
+      "timestamp": "2026-10-02T14:15:00Z",
+      "value": 2.5,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "CHUTE-DEPLOY-TIME-5",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "test_id": "TEST-CHUTE-DEPLOY-TIME",
+      "timestamp": "2026-10-02T14:20:00Z",
+      "value": 2.4,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "CHUTE-DEPLOY-TIME-6",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "test_id": "TEST-CHUTE-DEPLOY-TIME",
+      "timestamp": "2026-10-02T14:25:00Z",
+      "value": 2.2,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "CHUTE-DEPLOY-TIME-7",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "test_id": "TEST-CHUTE-DEPLOY-TIME",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 2.1,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "CHUTE-DEPLOY-TIME-0",
+      "item_id": "CHUTE-DEPLOY-TIME",
+      "test_id": "TEST-CHUTE-DEPLOY-TIME",
+      "timestamp": "2026-10-02T13:55:00Z",
+      "value": 2.8,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "SURFACE-WIND-1",
+      "item_id": "SURFACE-WIND",
+      "test_id": "TEST-SURFACE-WIND",
+      "timestamp": "2026-10-02T14:00:00Z",
+      "value": 11,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "SURFACE-WIND-2",
+      "item_id": "SURFACE-WIND",
+      "test_id": "TEST-SURFACE-WIND",
+      "timestamp": "2026-10-02T14:05:00Z",
+      "value": 10.8,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "SURFACE-WIND-3",
+      "item_id": "SURFACE-WIND",
+      "test_id": "TEST-SURFACE-WIND",
+      "timestamp": "2026-10-02T14:10:00Z",
+      "value": 10.5,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "SURFACE-WIND-4",
+      "item_id": "SURFACE-WIND",
+      "test_id": "TEST-SURFACE-WIND",
+      "timestamp": "2026-10-02T14:15:00Z",
+      "value": 10,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "SURFACE-WIND-5",
+      "item_id": "SURFACE-WIND",
+      "test_id": "TEST-SURFACE-WIND",
+      "timestamp": "2026-10-02T14:20:00Z",
+      "value": 9.8,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "SURFACE-WIND-6",
+      "item_id": "SURFACE-WIND",
+      "test_id": "TEST-SURFACE-WIND",
+      "timestamp": "2026-10-02T14:25:00Z",
+      "value": 9.3,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "SURFACE-WIND-7",
+      "item_id": "SURFACE-WIND",
+      "test_id": "TEST-SURFACE-WIND",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 9,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "SENSOR-DROPOUT-1",
+      "item_id": "SENSOR-DROPOUT",
+      "test_id": "TEST-SENSOR-DROPOUT",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 1,
+      "unit": "events",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AMBIENT-TEMP-0",
+      "item_id": "AMBIENT-TEMP",
+      "test_id": "TEST-AMBIENT-TEMP",
+      "timestamp": "2026-10-02T14:00:00Z",
+      "value": 25,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AMBIENT-TEMP-1",
+      "item_id": "AMBIENT-TEMP",
+      "test_id": "TEST-AMBIENT-TEMP",
+      "timestamp": "2026-10-02T14:05:00Z",
+      "value": 25,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AMBIENT-TEMP-2",
+      "item_id": "AMBIENT-TEMP",
+      "test_id": "TEST-AMBIENT-TEMP",
+      "timestamp": "2026-10-02T14:10:00Z",
+      "value": 25.1,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AMBIENT-TEMP-3",
+      "item_id": "AMBIENT-TEMP",
+      "test_id": "TEST-AMBIENT-TEMP",
+      "timestamp": "2026-10-02T14:15:00Z",
+      "value": 25.1,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AMBIENT-TEMP-4",
+      "item_id": "AMBIENT-TEMP",
+      "test_id": "TEST-AMBIENT-TEMP",
+      "timestamp": "2026-10-02T14:20:00Z",
+      "value": 25,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AMBIENT-TEMP-5",
+      "item_id": "AMBIENT-TEMP",
+      "test_id": "TEST-AMBIENT-TEMP",
+      "timestamp": "2026-10-02T14:25:00Z",
+      "value": 25,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AMBIENT-TEMP-6",
+      "item_id": "AMBIENT-TEMP",
+      "test_id": "TEST-AMBIENT-TEMP",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 25,
+      "unit": "°C",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AVIONICS-EVENT-COUNT-0",
+      "item_id": "AVIONICS-EVENT-COUNT",
+      "test_id": "TEST-AVIONICS-EVENT-COUNT",
+      "timestamp": "2026-10-02T14:00:00Z",
+      "value": 12,
+      "unit": "events",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AVIONICS-EVENT-COUNT-1",
+      "item_id": "AVIONICS-EVENT-COUNT",
+      "test_id": "TEST-AVIONICS-EVENT-COUNT",
+      "timestamp": "2026-10-02T14:05:00Z",
+      "value": 12,
+      "unit": "events",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AVIONICS-EVENT-COUNT-2",
+      "item_id": "AVIONICS-EVENT-COUNT",
+      "test_id": "TEST-AVIONICS-EVENT-COUNT",
+      "timestamp": "2026-10-02T14:10:00Z",
+      "value": 12,
+      "unit": "events",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AVIONICS-EVENT-COUNT-3",
+      "item_id": "AVIONICS-EVENT-COUNT",
+      "test_id": "TEST-AVIONICS-EVENT-COUNT",
+      "timestamp": "2026-10-02T14:15:00Z",
+      "value": 12,
+      "unit": "events",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AVIONICS-EVENT-COUNT-4",
+      "item_id": "AVIONICS-EVENT-COUNT",
+      "test_id": "TEST-AVIONICS-EVENT-COUNT",
+      "timestamp": "2026-10-02T14:20:00Z",
+      "value": 12,
+      "unit": "events",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AVIONICS-EVENT-COUNT-5",
+      "item_id": "AVIONICS-EVENT-COUNT",
+      "test_id": "TEST-AVIONICS-EVENT-COUNT",
+      "timestamp": "2026-10-02T14:25:00Z",
+      "value": 12,
+      "unit": "events",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "AVIONICS-EVENT-COUNT-6",
+      "item_id": "AVIONICS-EVENT-COUNT",
+      "test_id": "TEST-AVIONICS-EVENT-COUNT",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 12,
+      "unit": "events",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "RECOVERY-TEST-DURATION-0",
+      "item_id": "RECOVERY-TEST-DURATION",
+      "test_id": "TEST-RECOVERY-TEST-DURATION",
+      "timestamp": "2026-10-02T14:00:00Z",
+      "value": 9,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "RECOVERY-TEST-DURATION-1",
+      "item_id": "RECOVERY-TEST-DURATION",
+      "test_id": "TEST-RECOVERY-TEST-DURATION",
+      "timestamp": "2026-10-02T14:05:00Z",
+      "value": 9,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "RECOVERY-TEST-DURATION-2",
+      "item_id": "RECOVERY-TEST-DURATION",
+      "test_id": "TEST-RECOVERY-TEST-DURATION",
+      "timestamp": "2026-10-02T14:10:00Z",
+      "value": 9,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "RECOVERY-TEST-DURATION-3",
+      "item_id": "RECOVERY-TEST-DURATION",
+      "test_id": "TEST-RECOVERY-TEST-DURATION",
+      "timestamp": "2026-10-02T14:15:00Z",
+      "value": 9,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "RECOVERY-TEST-DURATION-4",
+      "item_id": "RECOVERY-TEST-DURATION",
+      "test_id": "TEST-RECOVERY-TEST-DURATION",
+      "timestamp": "2026-10-02T14:20:00Z",
+      "value": 9,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "RECOVERY-TEST-DURATION-5",
+      "item_id": "RECOVERY-TEST-DURATION",
+      "test_id": "TEST-RECOVERY-TEST-DURATION",
+      "timestamp": "2026-10-02T14:25:00Z",
+      "value": 9,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "RECOVERY-TEST-DURATION-6",
+      "item_id": "RECOVERY-TEST-DURATION",
+      "test_id": "TEST-RECOVERY-TEST-DURATION",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 9,
+      "unit": "s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "WIND-GUST-0",
+      "item_id": "WIND-GUST",
+      "test_id": "TEST-WIND-GUST",
+      "timestamp": "2026-10-02T14:00:00Z",
+      "value": 10,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "WIND-GUST-1",
+      "item_id": "WIND-GUST",
+      "test_id": "TEST-WIND-GUST",
+      "timestamp": "2026-10-02T14:05:00Z",
+      "value": 10.1,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "WIND-GUST-2",
+      "item_id": "WIND-GUST",
+      "test_id": "TEST-WIND-GUST",
+      "timestamp": "2026-10-02T14:10:00Z",
+      "value": 10,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "WIND-GUST-3",
+      "item_id": "WIND-GUST",
+      "test_id": "TEST-WIND-GUST",
+      "timestamp": "2026-10-02T14:15:00Z",
+      "value": 10,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "WIND-GUST-4",
+      "item_id": "WIND-GUST",
+      "test_id": "TEST-WIND-GUST",
+      "timestamp": "2026-10-02T14:20:00Z",
+      "value": 10.2,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "WIND-GUST-5",
+      "item_id": "WIND-GUST",
+      "test_id": "TEST-WIND-GUST",
+      "timestamp": "2026-10-02T14:25:00Z",
+      "value": 10,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    },
+    {
+      "id": "WIND-GUST-6",
+      "item_id": "WIND-GUST",
+      "test_id": "TEST-WIND-GUST",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "value": 10,
+      "unit": "m/s",
+      "configuration_version": "demo-v1",
+      "test_condition": "bench-A",
+      "valid": true
+    }
+  ],
+  "checklists": [
+    {
+      "item_id": "INSPECTION-01",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-02",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-03",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-04",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-05",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-06",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-07",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-08",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-09",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-10",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-11",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-12",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-13",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-14",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    },
+    {
+      "item_id": "INSPECTION-15",
+      "state": "COMPLETE",
+      "timestamp": "2026-10-02T14:30:00Z",
+      "evidence_document_ids": [
+        "DOC-STRUCTURE"
+      ]
+    }
+  ],
+  "documents": [
+    {
+      "id": "DOC-AVIONICS",
+      "version": "1",
+      "title": "Demo avionics requirements",
+      "content": "\n# §4.2.1\nIllustrative requirement: battery temperature must not exceed 45°C during this demo test. If exceeded, repeat the thermal test under the documented setup and request engineering review.\n\n# §4.3\nIllustrative requirement: log every sensor dropout and flag any event for inspection. Confirm the sensor record before interpreting affected readings.\n\n# AVIONICS-EVENT-COUNT\nIllustrative AVIONICS-EVENT-COUNT upper limit: 15 events. Retain a current comparable record.\n",
+      "simulated": true
+    },
+    {
+      "id": "DOC-PROPULSION",
+      "version": "1",
+      "title": "Demo propulsion requirements",
+      "content": "\n# §2.3\nIllustrative requirement: vibration must remain at or below 4.0 mm/s. Compare repeat observations using the same test configuration.\n",
+      "simulated": true
+    },
+    {
+      "id": "DOC-RECOVERY",
+      "version": "1",
+      "title": "Demo recovery requirements",
+      "content": "\n# §3.1\nIllustrative requirement: deployment time must not exceed 2.5 seconds. A resolved timing finding requires a current test record linked to the checklist.\n\n# RECOVERY-TEST-DURATION\nIllustrative RECOVERY-TEST-DURATION upper limit: 12 s. Retain a current comparable record.\n",
+      "simulated": true
+    },
+    {
+      "id": "DOC-STRUCTURE",
+      "version": "1",
+      "title": "Demo structure requirements",
+      "content": "\n# §5.2\nIllustrative requirement: a current interstage bond inspection record must be attached before this review item can be evaluated.\n\n# Checklist\nIllustrative review checklist: retain a completed record and linked subsystem requirement document for each item.\n",
+      "simulated": true
+    },
+    {
+      "id": "DOC-ENVIRONMENT",
+      "version": "1",
+      "title": "Demo environment requirements",
+      "content": "\n# §6.1\nIllustrative requirement: surface wind must not exceed 8 m/s in this demo scenario. Improving observations do not remove a current exceedance; recheck conditions at the next observation cycle.\n\n# AMBIENT-TEMP\nIllustrative AMBIENT-TEMP upper limit: 40 °C. Retain a current comparable record.\n\n# WIND-GUST\nIllustrative WIND-GUST upper limit: 12 m/s. Retain a current comparable record.\n",
+      "simulated": true
+    }
+  ],
+  "baseline": {
+    "id": "REVIEW-01",
+    "timestamp": "2026-10-02T13:30:00Z",
+    "configuration_version": "demo-v1",
+    "findings": [
+      {
+        "item_id": "BATTERY-THERMAL",
+        "requirement_version": "1",
+        "unit": "°C",
+        "test_condition": "bench-A",
+        "value": 41,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "MOTOR-VIBRATION",
+        "requirement_version": "1",
+        "unit": "mm/s",
+        "test_condition": "bench-A",
+        "value": 3.2,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "CHUTE-DEPLOY-TIME",
+        "requirement_version": "1",
+        "unit": "s",
+        "test_condition": "bench-A",
+        "value": 2.8,
+        "evaluation": "REVIEW_REQUIRED"
+      },
+      {
+        "item_id": "SURFACE-WIND",
+        "requirement_version": "1",
+        "unit": "m/s",
+        "test_condition": "bench-A",
+        "value": 11,
+        "evaluation": "REVIEW_REQUIRED"
+      },
+      {
+        "item_id": "SENSOR-DROPOUT",
+        "requirement_version": "1",
+        "unit": "events",
+        "test_condition": "bench-A",
+        "value": 0,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "FIN-INSPECTION",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": null,
+        "evaluation": "MISSING_EVIDENCE"
+      },
+      {
+        "item_id": "AMBIENT-TEMP",
+        "requirement_version": "1",
+        "unit": "°C",
+        "test_condition": "bench-A",
+        "value": 25,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "AVIONICS-EVENT-COUNT",
+        "requirement_version": "1",
+        "unit": "events",
+        "test_condition": "bench-A",
+        "value": 12,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "RECOVERY-TEST-DURATION",
+        "requirement_version": "1",
+        "unit": "s",
+        "test_condition": "bench-A",
+        "value": 9,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "WIND-GUST",
+        "requirement_version": "1",
+        "unit": "m/s",
+        "test_condition": "bench-A",
+        "value": 10,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-01",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-02",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-03",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-04",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-05",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-06",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-07",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-08",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-09",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-10",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-11",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-12",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-13",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-14",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      },
+      {
+        "item_id": "INSPECTION-15",
+        "requirement_version": "1",
+        "unit": "boolean",
+        "test_condition": "bench-A",
+        "value": 1,
+        "evaluation": "CHECK_PASSED"
+      }
+    ]
+  }
+}
