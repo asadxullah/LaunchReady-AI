@@ -42,7 +42,23 @@ test('Retrieval preserves exact source identity and filters unrelated passages',
 })
 test('Gemini interactions contract, JSON output validation, model, and no storage',async()=>{
  const original=globalThis.fetch,old=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY='test-only'
- try{globalThis.fetch=async(_url,init)=>{const b=JSON.parse(String(init?.body));assert.equal(b.model,'gemini-3.8-flash');assert.equal(b.store,false);assert.equal(b.response_format.mime_type,'application/json');return Response.json({outputs:[{type:'text',text:'{"answer":"grounded"}'}]})};assert.deepEqual(await generate('test',{},z.object({answer:z.string()}).strict()),{answer:'grounded'});globalThis.fetch=async()=>Response.json({outputs:[{type:'text',text:'{"invalid":1}'}]});await assert.rejects(()=>generate('test',{},z.object({answer:z.string()}).strict()))}finally{globalThis.fetch=original;if(old===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=old}
+ try{globalThis.fetch=async(_url,init)=>{const b=JSON.parse(String(init?.body));assert.equal(b.model,'gemini-3.8-flash');assert.equal(b.store,false);assert.equal(b.response_format.mime_type,'application/json');assert.equal(new Headers(init?.headers).get('Api-Revision'),'2026-05-20');return Response.json({status:'completed',steps:[{type:'tool_result',content:[{type:'text',text:'untrusted tool result'}]},{type:'model_output',content:[{type:'thought',text:'not the answer'},{type:'text',text:'{"answer":"grounded"}'}]}]})};assert.deepEqual(await generate('test',{},z.object({answer:z.string()}).strict()),{answer:'grounded'});globalThis.fetch=async()=>Response.json({status:'completed',steps:[{type:'model_output',content:[{type:'text',text:'{"invalid":1}'}]}]});await assert.rejects(()=>generate('test',{},z.object({answer:z.string()}).strict()))}finally{globalThis.fetch=original;if(old===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=old}
+})
+
+test('Gemini retries a transient 503 once and retains the original timeout budget',async()=>{
+ const original=globalThis.fetch,old=process.env.GEMINI_API_KEY;process.env.GEMINI_API_KEY='test-only'
+ try{
+  let calls=0
+  globalThis.fetch=async()=>++calls===1?Response.json({}, {status:503}):Response.json({steps:[{type:'model_output',content:[{type:'text',text:'{"answer":"recovered"}'}]}]})
+  assert.deepEqual(await generate('test',{},z.object({answer:z.string()}),1000),{answer:'recovered'});assert.equal(calls,2)
+  calls=0;let signal:AbortSignal|undefined
+  globalThis.fetch=async(_url,init)=>{calls++;if(calls===1)return Response.json({}, {status:503});signal=init?.signal as AbortSignal;return new Promise<Response>(()=>{})}
+  const started=Date.now();await assert.rejects(()=>generate('test',{},z.object({answer:z.string()}),350),(error:unknown)=>failureReason(error).code==='TIMEOUT');assert.equal(calls,2);assert.equal(signal?.aborted,true);assert.ok(Date.now()-started<600)
+  calls=0;globalThis.fetch=async()=>{calls++;return Response.json({}, {status:503})}
+  await assert.rejects(()=>generate('test',{},z.object({answer:z.string()}),20),(error:unknown)=>failureReason(error).httpStatus===503);assert.equal(calls,1)
+  calls=0;globalThis.fetch=async()=>{calls++;return Response.json({}, {status:429})}
+  await assert.rejects(()=>generate('test',{},z.object({answer:z.string()})),(error:unknown)=>failureReason(error).code==='QUOTA');assert.equal(calls,1)
+ }finally{globalThis.fetch=original;if(old===undefined)delete process.env.GEMINI_API_KEY;else process.env.GEMINI_API_KEY=old}
 })
 
 test('Gemini failures give specific safe reasons for timeout, network, access, quota and model errors',async()=>{

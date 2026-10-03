@@ -25,7 +25,7 @@ async function request(path:string,body:unknown,timeoutMs:number){
  if(!configured())throw new AIError('Gemini API key is not configured on the server.','NOT_CONFIGURED')
  const controller=new AbortController();let timer:ReturnType<typeof setTimeout>|undefined
  const timeout=new Promise<never>((_,reject)=>{timer=setTimeout(()=>{reject(new AIError(`Gemini did not respond within ${timeoutMs/1000} seconds; the request was cancelled.`,'TIMEOUT'));controller.abort()},timeoutMs)})
- const operation=(async()=>{let response:Response;try{response=await fetch(`https://generativelanguage.googleapis.com/v1beta/${path}`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':process.env.GEMINI_API_KEY!},body:JSON.stringify(body),signal:controller.signal})}catch{if(controller.signal.aborted)throw new AIError(`Gemini did not respond within ${timeoutMs/1000} seconds; the request was cancelled.`,'TIMEOUT');throw new AIError('Could not connect to Gemini. A network or connection error occurred.','NETWORK')}
+ const operation=(async()=>{let response:Response;try{response=await fetch(`https://generativelanguage.googleapis.com/v1beta/${path}`,{method:'POST',headers:{'Content-Type':'application/json','x-goog-api-key':process.env.GEMINI_API_KEY!,...(path==='interactions'?{'Api-Revision':'2026-05-20'}:{})},body:JSON.stringify(body),signal:controller.signal})}catch{if(controller.signal.aborted)throw new AIError(`Gemini did not respond within ${timeoutMs/1000} seconds; the request was cancelled.`,'TIMEOUT');throw new AIError('Could not connect to Gemini. A network or connection error occurred.','NETWORK')}
  if(!response.ok)throw statusError(response.status)
  let raw:string;try{raw=await response.text()}catch{throw new AIError('The connection ended while reading the Gemini response.','NETWORK')}
  if(raw.length>3000000)throw new AIError('Gemini response exceeded the supported size.','INVALID_RESPONSE');try{return JSON.parse(raw)}catch{throw new AIError('Gemini returned invalid JSON.','INVALID_RESPONSE')}
@@ -33,8 +33,20 @@ async function request(path:string,body:unknown,timeoutMs:number){
  try{return await Promise.race([operation,timeout])}finally{if(timer)clearTimeout(timer)}
 }
 export async function generate<T>(task:string,input:unknown,schema:z.ZodType<T>,timeoutMs=AI_TIMEOUT_MS):Promise<T>{
- const data=await request('interactions',{model:model(),input:JSON.stringify({task,context:input}),system_instruction:instructions,store:false,response_format:{type:'text',mime_type:'application/json',schema:z.toJSONSchema(schema)}},timeoutMs)
- const text=typeof data.output_text==='string'?data.output_text:Array.isArray(data.outputs)?data.outputs.filter((x:{type:string;text?:string})=>x.type==='text').map((x:{text:string})=>x.text).join(''):''
+ const body={model:model(),input:JSON.stringify({task,context:input}),system_instruction:instructions,store:false,response_format:{type:'text',mime_type:'application/json',schema:z.toJSONSchema(schema)}}
+ const deadline=Date.now()+timeoutMs
+ let data
+ try{data=await request('interactions',body,timeoutMs)}catch(error){
+  // One transient retry shares the original deadline; access/quota errors are not retried.
+  if(!(error instanceof AIError)||error.httpStatus!==503||deadline-Date.now()<=250)throw error
+  await new Promise(resolve=>setTimeout(resolve,250))
+  const remaining=deadline-Date.now()
+  if(remaining<=0)throw new AIError(`Gemini did not respond within ${timeoutMs/1000} seconds; the request was cancelled.`,'TIMEOUT')
+  data=await request('interactions',body,remaining)
+ }
+ // REST returns model_output steps. SDK convenience fields and older outputs remain compatible.
+ const textParts=(items:unknown[])=>items.filter((item):item is {type:'text';text:string}=>!!item&&typeof item==='object'&&'type' in item&&item.type==='text'&&'text' in item&&typeof item.text==='string').map(item=>item.text).join('')
+ const text=Array.isArray(data.steps)?textParts(data.steps.filter((step:unknown)=>!!step&&typeof step==='object'&&'type' in step&&step.type==='model_output').flatMap((step:{content?:unknown})=>Array.isArray(step.content)?step.content:[])):typeof data.output_text==='string'?data.output_text:Array.isArray(data.outputs)?textParts(data.outputs):''
  if(!text||text.length>20000)throw new AIError('Gemini returned no usable text response.','INVALID_RESPONSE')
  try{return schema.parse(JSON.parse(text))}catch{throw new AIError('Gemini response failed JSON schema validation.','INVALID_RESPONSE')}
 }

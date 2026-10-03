@@ -13,5 +13,5 @@ globalThis.fetch=async(url,init)=>{
  else if(task.startsWith('Report Agent'))result={summary:'Battery temperature and wind require review. Missing inspection evidence remains open.',findingIds:context.findings.map(f=>f.id)}
  else if(context.question==='TEST_UNKNOWN_CITATION')result={answer:'Unsupported finding.',citations:['INVENTED'],chunkIds:[]}
  else result={answer:context.question.toLowerCase().includes('previous')?'The previous question was about the battery temperature finding.':'Battery temperature is above its configured limit. Repeat the configured test and request engineering review.',citations:['BATTERY-THERMAL'],chunkIds:context.chunks.slice(0,1).map(c=>c.id)}
- return Response.json({outputs:[{type:'text',text:JSON.stringify(result)}]})
+ return Response.json({status:'completed',steps:[{type:'model_output',content:[{type:'text',text:JSON.stringify(result)}]}]})
 }
