@@ -240,7 +240,7 @@ td span:not(.status-pill):not(.trend):not(.confidence) { font-size: 13px; }
 .agent-log li { margin: 14px 0; color: #b1bbcf; font-size: 14px; }
 .agent-log li p { margin: 6px 0; }
 .agent-mode { display: inline-block; padding: 3px 8px; border-radius: 4px; margin-left: 12px; font-size: 12px; background: #232d42; color: #bcd4ff; }
-.agent-mode.gemini { background: #2d2245; color: #d8c5ff; }
+.agent-mode.gemini, .agent-mode.groq { background: #2d2245; color: #d8c5ff; }
 .agent-mode.fallback { background: #382b1e; color: #f3c387; }
 .assistant-model { padding: 8px 12px; border: 1px solid #544873; color: #d6c7ff; border-radius: 4px; font-size: 13px; }
 @media (max-width: 520px) { .history-list button { align-items: start; flex-direction: column; }.pipeline-stages small { margin-left: 0; }.package-panel .tabs { flex-wrap: wrap; }.package-panel .tabs button { flex: 1; }.agent-log { padding: 18px; } }

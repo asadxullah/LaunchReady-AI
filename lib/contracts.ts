@@ -5,8 +5,8 @@ export const stageLabels: Record<Stage, string> = { VALIDATE: 'Validate inputs',
 export interface Chunk { id: string; documentId: string; version: string; title: string; section: string; text: string; vector?: number[] }
 export type AIFailureCode = 'NOT_CONFIGURED' | 'AUTHENTICATION' | 'PERMISSION' | 'QUOTA' | 'MODEL_NOT_FOUND' | 'TIMEOUT' | 'NETWORK' | 'PROVIDER_UNAVAILABLE' | 'REQUEST_REJECTED' | 'INVALID_RESPONSE' | 'OUTPUT_REJECTED'
 export interface AIFailure { code: AIFailureCode; reason: string; httpStatus?: number }
-export interface AgentEvent { stage: Stage; mode: 'code' | 'gemini' | 'fallback'; detail: string; at: string; failure?: AIFailure }
-export interface Narrative { summary: string; summaryMode?: 'gemini' | 'code'; summaryFailure?: AIFailure; relationships: { text: string; findingIds: string[]; hypothesis: boolean }[] }
+export interface AgentEvent { stage: Stage; mode: 'code' | 'gemini' | 'groq' | 'fallback'; detail: string; at: string; failure?: AIFailure }
+export interface Narrative { summary: string; summaryMode?: 'gemini' | 'groq' | 'code'; summaryFailure?: AIFailure; relationships: { text: string; findingIds: string[]; hypothesis: boolean }[] }
 export interface ReviewRecord {
  id: string; packageId: string; mission: { id: string; name: string; configuration: string; timestamp: string; simulated: boolean; baseline: string | null };
  stage: Stage; status: 'RUNNING' | 'COMPLETE' | 'FAILED'; createdAt: string; updatedAt: string; findings: Finding[]; notes: ReviewNotes;

@@ -1,6 +1,6 @@
 # LaunchReady AI
 
-A complete Next.js mission-review prototype: backend API, persistent data, validated JSON/CSV uploads, deterministic checks, evidence retrieval, three Gemini agents, and an evidence-grounded chatbot. The existing dark dashboard, evidence drawer, charts, report, responsive cards, and review controls are connected to the backend.
+A complete Next.js mission-review prototype: backend API, persistent data, validated JSON/CSV uploads, deterministic checks, evidence retrieval, three Groq agents, and an evidence-grounded chatbot. The existing dark dashboard, evidence drawer, charts, report, responsive cards, and review controls are connected to the backend.
 
 ## Run locally
 
@@ -10,10 +10,10 @@ Requires Node.js 22 or newer.
 npm ci
 ```
 
-Copy `.env.example` to `.env.local`, set `GEMINI_API_KEY`, and keep:
+Copy `.env.example` to `.env.local`, set `GROQ_API_KEY` (and optionally `GEMINI_API_KEY` for vector retrieval), and keep:
 
 ```dotenv
-GEMINI_MODEL=gemini-3.8-flash
+GROQ_MODEL=openai/gpt-oss-120b
 GEMINI_EMBEDDING_MODEL=gemini-embedding-2
 ```
 
@@ -25,7 +25,7 @@ npm run dev
 
 Open http://localhost:3000. Choose **Start a mission review → Demo mission → Run review**, or upload `samples/mission-package.json`.
 
-No database credentials are required locally: SQLite is created at `data/launchready.db`. Do not commit this directory. Without a Gemini key, checks and reports still run with visible fallback labels; the chatbot reports its fallback mode. The application never swaps custom inputs for demo results.
+No database credentials are required locally: SQLite is created at `data/launchready.db`. Do not commit this directory. Without a Groq key, checks and reports still run with visible code fallback labels. Without a Gemini key, evidence retrieval uses lexical matching. The application never swaps custom inputs for demo results.
 
 ## Deploy the complete app on Vercel
 
@@ -36,8 +36,9 @@ No database credentials are required locally: SQLite is created at `data/launchr
 
 | Variable | Value |
 | --- | --- |
-| `GEMINI_API_KEY` | Your Google AI Studio API key |
-| `GEMINI_MODEL` | `gemini-3.8-flash` |
+| `GROQ_API_KEY` | Your Groq API key |
+| `GEMINI_API_KEY` | Your Google AI Studio API key for embeddings (optional) |
+| `GROQ_MODEL` | `openai/gpt-oss-120b` |
 | `GEMINI_EMBEDDING_MODEL` | `gemini-embedding-2` |
 | `TURSO_DATABASE_URL` | Your `libsql://…turso.io` database URL |
 | `TURSO_AUTH_TOKEN` | Your database token |
@@ -59,7 +60,8 @@ The source package does not deploy your site, create cloud accounts, or contain 
 - **Evidence Agent:** selects supplied chunk IDs and exact source quotations, checked against actual stored passages. Its selections appear in the evidence drawer. Deterministic required-source links cannot be replaced by unrelated passages.
 - **Analysis Agent:** adds bounded, cited cross-signal relationships; possible causes are labeled as investigation hypotheses. Numeric rules and computed findings are immutable.
 - **Report Agent:** produces a summary; all findings and gaps remain in the report regardless of agent output. Invalid IDs, changed coverage and unsupported numbers cause a fallback.
-- **Gemini chatbot:** current review, question-specific retrieved passages and persisted recent conversation history; clickable finding citations and cited source passages.
+- **Groq chatbot:** current review, question-specific retrieved passages and persisted recent conversation history; clickable finding citations and cited source passages.
+- Chat answers and review summaries render Markdown headings, emphasis, lists and tables. Generated HTML, remote images and unvalidated link destinations are excluded; verified evidence remains accessible through citation buttons. Chat replies are requested to be concise unless detail is asked for.
 - Persistent packages, resumable reviews, human dispositions and chat messages. Saved notes never change computed check results; dismissal requires a note.
 - Markdown exports from saved server state; print/PDF from the report view.
 - Browser-session scoping, HttpOnly cookie, origin checks, streaming body limits, bounded provider timeouts, quotas and stage leases.
@@ -72,7 +74,15 @@ The pipeline is:
 
 Each advance request completes and stores one actual stage. The browser runs them sequentially. Nothing continues as an untracked background task after a serverless request ends. If the page closes, the completed stage stays saved; reopen the last review or select it from saved reviews and resume. A stage lease prevents concurrent execution; an abandoned lease expires after 90 seconds.
 
-AI timeouts, missing keys, quota failures and malformed model output produce explicit fallback events rather than erase results. Text generation has an 18-second deadline, including reading the response; embedding calls have a 6-second deadline. Requests that exceed the deadline are cancelled. A temporary HTTP 503 receives one retry after 250 milliseconds, sharing the original 18-second deadline; other failures are not retried. The chatbot returns code-generated review information, and the report displays a Code-generated summary notice with the failure reason. Failure details persist in chat history, review events, and Markdown exports. If a review agent encounters a provider failure, subsequent agents use code fallbacks immediately instead of repeating failing calls. Reasons distinguish missing configuration, rejected credentials, denied permissions, unavailable model, quota/rate limit, timeout, network failure, server outage, rejected request and invalid or rejected AI output. HTTP status is included when the provider supplied one; secrets and raw provider messages are not exposed. Gemini is called through the Interactions REST API with the documented revision header, JSON response schemas and `store: false`; responses are read from native REST `model_output` steps. Chat history is kept in the application's database and sent as bounded context; this option is not a claim about Google's other data-processing policies.
+AI timeouts, missing keys, quota failures and malformed model output produce explicit fallback events rather than erase results. Text generation has an 18-second deadline, including reading the response; embedding calls have a 6-second deadline. Requests that exceed the deadline are cancelled. A temporary HTTP 503 receives one retry after 250 milliseconds, sharing the original 18-second deadline; other failures are not retried. The chatbot returns code-generated review information, and the report displays a Code-generated summary notice with the failure reason. Failure details persist in chat history, review events, and Markdown exports. If a review agent encounters a provider failure, subsequent agents use code fallbacks immediately instead of repeating failing calls. Reasons distinguish missing configuration, rejected credentials, denied permissions, unavailable model, quota/rate limit, timeout, network failure, server outage, rejected request and invalid or rejected AI output. HTTP status is included when the provider supplied one; secrets and raw provider messages are not exposed. Groq is called through its Chat Completions REST API with strict JSON response schemas, low reasoning effort and a 2,048-token output cap. Local Zod, quote and citation checks still reject invalid output. Gemini is used only for embeddings. Chat history is kept in the application's database and sent as bounded context; provider retention follows the provider account policies.
+
+## Groq migration and limits
+
+Existing `GEMINI_MODEL` values no longer control agents or chat. Add `GROQ_API_KEY` as a Vercel Secret and `GROQ_MODEL=openai/gpt-oss-120b` as Config, keep your existing database variables, then deploy the changed files and start a new review. `/api/health` identifies the Groq generation provider separately from embedding configuration. It checks credential presence, not successful paid calls.
+
+The legacy module path `lib/server/gemini.ts` now contains Groq generation and Gemini embedding transport; retaining the path avoids breaking existing imports. Old saved Gemini results remain readable, while new agent events, chat labels and exports identify Groq.
+
+Prompts omit raw observation arrays, vectors and duplicated source passages. Evidence excerpts are capped and deduplicated; quotes must match the exact supplied excerpt and stored source. All finding IDs remain present, with detailed fields for open findings and question-relevant findings. No rule evaluation or report coverage is removed. Oversized generation context falls back with an explicit reason instead of silently truncating the request. Groq still enforces account request and token limits; compact prompts do not guarantee unlimited free usage. HTTP 429 is not retried automatically; a numeric Retry-After header is included in the saved failure reason when present.
 
 ## Upload format
 
@@ -126,9 +136,9 @@ npm run build
 npm run test:integration
 ```
 
-Integration tests start an isolated production server with a temporary SQLite database and a test-only mocked Gemini API; they do not consume tokens. They cover custom and demo uploads, all agent stages, browser-session isolation, CSRF origin rejection, notes and exports, chat history, CSV ingestion, fabricated citations and provider failure fallback.
+Integration tests start an isolated production server with a temporary SQLite database and a test-only mocked Groq and Gemini APIs; they do not consume tokens. They cover custom and demo uploads, all agent stages, browser-session isolation, CSRF origin rejection, notes and exports, chat history, CSV ingestion, fabricated citations and provider failure fallback.
 
-Live Gemini and hosted Turso calls require your credentials and have not been exercised in this workspace. The existing design was inspected on the user's deployed site before backend integration. This new connected UI still needs a browser check on the new deployment because the cloud browser cannot access the local execution server.
+Live Groq, Gemini and hosted Turso calls require your credentials and have not been exercised in this workspace. The existing design was inspected on the user's deployed site before backend integration. This new connected UI still needs a browser check on the new deployment because the cloud browser cannot access the local execution server.
 
 Generate fresh sample files with `npm run sample`. No simulation data represents actual rocket engineering limits.
 
