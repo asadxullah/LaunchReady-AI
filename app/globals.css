@@ -309,7 +309,7 @@ td span:not(.status-pill):not(.trend):not(.confidence) { font-size: 13px; }
 .intake-document summary::after { content: "⌄"; color: var(--violet); margin-left: 8px; font-size: 18px; }
 .intake-document[open] summary::after { transform: rotate(180deg); }
 
-/* Decorative Aster-2 motion; labels and review counts remain stationary. */
+/* Decorative orbital motion; the brand and caption remain stationary. */
 .orbital-visual .orbit-b::after {
   content: "";
   position: absolute;
@@ -353,3 +353,11 @@ td span:not(.status-pill):not(.trend):not(.confidence) { font-size: 13px; }
 .orbit-caption { position: absolute; bottom: 8px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; gap: 12px; color: #b1bbcf; font-size: 11px; letter-spacing: .12em; }
 .orbit-caption [aria-hidden] { color: var(--violet); }
 @media (max-width: 850px) { .orbital-visual { min-height: 350px; }.orbit-caption { gap: 9px; font-size: 10px; } }
+
+/* Product branding stays legible inside the orbit at every screen size. */
+.orbit-core .core-label { display: flex; flex-direction: column; align-items: center; gap: 5px; width: 96px; font-size: 14px; font-weight: 650; line-height: 1.2; letter-spacing: .14em; }
+.orbit-core .core-label span { font-size: inherit; }
+.orbit-core .core-brand-launch { color: #f0edf8; }
+.orbit-core .core-brand-ready { color: #c4b0ff; }
+.orbit-core .core-label small { margin-top: 4px; padding: 3px 8px; border: 1px solid rgba(101, 217, 232, .25); border-radius: 4px; color: var(--cyan); font-size: 10px; letter-spacing: .12em; }
+@media (max-width: 850px) { .orbit-core .core-label { width: 84px; font-size: 12px; gap: 4px; }.orbit-core .core-label small { margin-top: 2px; font-size: 9px; } }
