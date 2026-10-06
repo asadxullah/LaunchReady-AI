@@ -1,13 +1,15 @@
 import { z } from 'zod'
+import { measurementUnits } from '../units'
 const id = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_.-]{0,95}$/)
 const time = z.string().datetime({ offset: true })
 const finite = z.number().finite()
-const unit = z.enum(['°C', 'C', '°F', 'F', 'K', 'm/s', 'km/h', 'mm/s', 's', 'ms', 'events', 'boolean', ''])
+const unit = z.enum(measurementUnits)
 export const requirementSchema = z.object({
  id, item_id: id, version: z.string().min(1).max(32), title: z.string().min(1).max(200), subsystem: z.enum(['PROPULSION','AVIONICS','STRUCTURE','RECOVERY','ENVIRONMENT']),
  parameter: z.string().min(1).max(120), operator: z.enum(['LTE','GTE','RANGE','CHECKLIST']), lower: finite.optional(), upper: finite.optional(), unit,
  priority: z.enum(['HIGH','MEDIUM','LOW']), configuration_version: z.string().min(1).max(48), test_condition: z.string().min(1).max(120),
  freshness_minutes: finite.positive().max(525600), material_change: finite.nonnegative(), trend_min_minutes: finite.nonnegative().default(20), trend_tolerance: finite.nonnegative().default(0.01),
+ evaluation_basis: z.enum(['LATEST','MAXIMUM','MINIMUM','ALL']).optional(),
  source: z.object({ document_id: id, section: z.string().max(150), version: z.string().min(1).max(32) }).strict().nullable(),
  required_document_ids: z.array(id).max(10), action: z.string().min(1).max(800), procedure_id: id.optional(), demo_assumption: z.boolean(),
 }).strict().superRefine((r,ctx)=>{

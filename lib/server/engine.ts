@@ -1,9 +1,10 @@
 import type { Finding, Diff } from '../mission'
 import type { Chunk } from '../contracts'
 import type { MissionPackage, Requirement } from './schema'
-export const engineVersion='1.0.0'
+import { unitConversions } from '../units'
+export const engineVersion='1.1.0'
 const round=(x:number)=>Number(x.toFixed(6))
-const conversion:Record<string,{family:string;scale:number;offset:number}>={C:{family:'temperature',scale:1,offset:0},'°C':{family:'temperature',scale:1,offset:0},F:{family:'temperature',scale:5/9,offset:-160/9},'°F':{family:'temperature',scale:5/9,offset:-160/9},K:{family:'temperature',scale:1,offset:-273.15},'m/s':{family:'speed',scale:1,offset:0},'km/h':{family:'speed',scale:1/3.6,offset:0},'mm/s':{family:'vibration',scale:1,offset:0},s:{family:'time',scale:1,offset:0},ms:{family:'time',scale:.001,offset:0},events:{family:'events',scale:1,offset:0},boolean:{family:'boolean',scale:1,offset:0},'':{family:'none',scale:1,offset:0}}
+const conversion:Record<string,{family:string;scale:number;offset:number}>=unitConversions
 export function convert(value:number,from:string,to:string){const a=conversion[from],b=conversion[to];if(!a||!b||a.family!==b.family)throw new Error(`Incompatible units ${from} / ${to}`);return round((value*a.scale+a.offset-b.offset)/b.scale)}
 export function chunkDocuments(p:MissionPackage):Chunk[]{
  const chunks:Chunk[]=[]
@@ -35,9 +36,14 @@ export function evaluate(p:MissionPackage,chunks:Chunk[]){
   valid.sort((a,b)=>Date.parse(a.timestamp)-Date.parse(b.timestamp));
   const conflicts=valid.some((o,i)=>i>0&&o.timestamp===valid[i-1].timestamp&&o.value!==valid[i-1].value)
   if(conflicts)flags.push('CONFLICTING')
-  const latest=valid.at(-1);let current=latest?.value??null
+  const latest=valid.at(-1)
+  const fresh=valid.filter(o=>Date.parse(p.mission.timestamp)-Date.parse(o.timestamp)<=r.freshness_minutes*60000)
+  const basis=r.evaluation_basis??'LATEST'
+  let selected=latest
+  if(r.operator!=='CHECKLIST'&&basis!=='LATEST') selected=fresh.reduce<typeof latest>((chosen,o)=>!chosen||((basis==='MAXIMUM'?o.value:basis==='MINIMUM'?-o.value:distance(o.value,r))>= (basis==='MAXIMUM'?chosen.value:basis==='MINIMUM'?-chosen.value:distance(chosen.value,r)))?o:chosen,undefined)
+  let current=selected?.value??null
   if(!latest)flags.push(p.observations.some(o=>o.item_id===r.item_id)?'INVALID':'ABSENT')
-  if(latest&&Date.parse(p.mission.timestamp)-Date.parse(latest.timestamp)>r.freshness_minutes*60000){flags.push('STALE');current=null}
+  if(latest&&(!selected||Date.parse(p.mission.timestamp)-Date.parse(latest.timestamp)>r.freshness_minutes*60000)){flags.push('STALE');current=null}
   const linked=r.source?chunks.find(c=>c.documentId===r.source!.document_id&&c.version===r.source!.version&&(c.section===r.source!.section||c.section.includes(r.source!.section))):undefined
   if(!linked)flags.push('MISSING_DOCUMENT')
   for(const id of r.required_document_ids)if(!p.documents.some(d=>d.id===id))flags.push(`ABSENT_DOCUMENT:${id}`)
@@ -57,14 +63,17 @@ export function evaluate(p:MissionPackage,chunks:Chunk[]){
   else if(previous.evaluation!==evaluation||current!==null&&prior!==null&&Math.abs(current-prior)>r.material_change)status='CHANGED'
   else status=open?'UNRESOLVED':'UNCHANGED'
   const samples=unique.slice(-10)
+  // Keep an earlier limit exceedance visible in the chart even if the last sample recovered.
+  if(selected&&basis!=='LATEST'&&!samples.some(o=>o.id===selected.id)){samples.shift();samples.push(selected);samples.sort((a,b)=>Date.parse(a.timestamp)-Date.parse(b.timestamp))}
   const label=conflicts||current===null?'INSUFFICIENT_DATA':trend(samples,r)
-  const reasons=[linked?'Requirement source and version are linked.':'Requirement source is missing or its section/version does not match.',latest&&current!==null?'Current comparable record is valid and fresh.':'Current usable evidence is absent or stale.',...flags.map(f=>`Evidence flag: ${f}`)]
+  const reasons=[linked?'Requirement source and version are linked.':'Requirement source is missing or its section/version does not match.',latest&&current!==null?'Current comparable record is valid and fresh.':'Current usable evidence is absent or stale.',...(basis==='LATEST'?[]:[`Evaluation uses ${basis==='ALL'?'all fresh samples (the greatest limit exceedance, or the latest sample if all meet the limit)':basis.toLowerCase()+' of fresh samples'}.`]),...flags.map(f=>`Evidence flag: ${f}`)]
   if(r.operator!=='CHECKLIST'&&label==='INSUFFICIENT_DATA')reasons.push('Insufficient comparable history for a trend.')
   const confidence=flags.length?'LOW':r.operator!=='CHECKLIST'&&label==='INSUFFICIENT_DATA'?'MEDIUM':'HIGH'
-  const rule=r.operator==='CHECKLIST'?'Completed checklist and required evidence':r.operator==='LTE'?`≤ ${r.upper} ${r.unit}`:r.operator==='GTE'?`≥ ${r.lower} ${r.unit}`:`${r.lower}–${r.upper} ${r.unit}`
+  const ruleBase=r.operator==='CHECKLIST'?'Completed checklist and required evidence':r.operator==='LTE'?`≤ ${r.upper} ${r.unit}`:r.operator==='GTE'?`≥ ${r.lower} ${r.unit}`:`${r.lower}–${r.upper} ${r.unit}`
+  const rule=ruleBase+(r.operator!=='CHECKLIST'&&basis!=='LATEST'?` · ${basis==='ALL'?'every imported sample':basis.toLowerCase()}`:'')
   const impact=conflicts?'Conflicting observations require investigation.':current===null?'This item cannot be evaluated from fresh comparable records.':violation?`${current} ${r.unit} does not meet the configured requirement (${rule}).`:`${current} ${r.unit} meets the configured requirement (${rule}).`
   const span=samples.length>1?(Date.parse(samples.at(-1)!.timestamp)-Date.parse(samples[0].timestamp))/60000:0
-  results.push({id:r.item_id,title:r.title,subsystem:r.subsystem,status,evaluation,priority:r.priority,previous:prior,current,unit:r.unit,limit:r.upper??null,lowerLimit:r.lower??null,requirement:`${r.id} v${r.version} · ${rule}`,dataId:latest?.id??null,trend:label,confidence,confidenceReasons:reasons,series:r.operator==='CHECKLIST'?[]:samples.map(o=>({time:o.timestamp,value:o.value})),source:linked?{id:linked.id,title:linked.title,section:linked.section,excerpt:linked.text}:null,impact,action:r.action,gap,flags,windowMinutes:round(span),ruleLabel:rule,comparable:compatible,stillOpen:open,requirementVersion:r.version,rawDirection:samples.length>1?(samples.at(-1)!.value>samples[0].value?'RISING':samples.at(-1)!.value<samples[0].value?'FALLING':'UNCHANGED'):'UNAVAILABLE',absoluteChange:current!==null&&prior!==null?round(current-prior):null,percentageChange:current!==null&&prior!==null&&prior!==0&&r.unit!=='events'?round((current-prior)/Math.abs(prior)*100):null})
+  results.push({id:r.item_id,title:r.title,subsystem:r.subsystem,status,evaluation,priority:r.priority,previous:prior,current,unit:r.unit,limit:r.upper??null,lowerLimit:r.lower??null,requirement:`${r.id} v${r.version} · ${rule}`,dataId:selected?.id??null,trend:label,confidence,confidenceReasons:reasons,series:r.operator==='CHECKLIST'?[]:samples.map(o=>({time:o.timestamp,value:o.value})),source:linked?{id:linked.id,title:linked.title,section:linked.section,excerpt:linked.text}:null,impact,action:r.action,gap,flags,windowMinutes:round(span),ruleLabel:rule,comparable:compatible,stillOpen:open,requirementVersion:r.version,rawDirection:samples.length>1?(samples.at(-1)!.value>samples[0].value?'RISING':samples.at(-1)!.value<samples[0].value?'FALLING':'UNCHANGED'):'UNAVAILABLE',absoluteChange:current!==null&&prior!==null?round(current-prior):null,percentageChange:current!==null&&prior!==null&&prior!==0&&r.unit!=='events'?round((current-prior)/Math.abs(prior)*100):null})
  }
  return {findings:results,warnings}
 }
