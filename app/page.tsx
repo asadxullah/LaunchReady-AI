@@ -62,7 +62,6 @@ function Landing({ navigate, trySample, busy }: { navigate: (v: View) => void; t
           <button className="primary-cta" disabled={busy} onClick={() => navigate('selection')}>Start a mission review <ArrowRight size={17} /></button>
           <button className="secondary-cta sample-cta" disabled={busy} onClick={trySample}>{busy ? 'Preparing sample…' : 'Try sample mission'} <ArrowRight size={16} /></button>
         </div>
-        <p className="hero-formats">CSV / Excel data <span aria-hidden="true">·</span> PDF evidence</p>
         <div className="hero-meta"><span>For rocket engineers and small flight-test teams</span></div>
       </div>
       <div className="orbital-visual" role="img" aria-label="LaunchReady AI: flight data, evidence, and engineering review">
@@ -136,18 +135,109 @@ function Assistant({ context, inspect, clearContext }: { context: string | null;
 function SummaryNotice() { const { review } = useApp(); const failure = review?.narrative.summaryFailure; if (review?.narrative.summaryMode !== 'code') return null; return <div className="fallback-notice" role="status"><b>Basic summary</b><p>{failureMessage(failure)} This summary uses the recorded findings.</p><FailureDetails failure={failure} /></div> }
 function ReviewNotices() { const { review } = useApp(); if (!review?.warnings.length) return null; return <details className="panel agent-log"><summary>Review notices ({review.warnings.length})</summary><ul>{review.warnings.map((warning,index) => <li key={index}>{warning}</li>)}</ul></details> }
 
+const needsAttention = (finding: Finding) => finding.evaluation !== 'CHECK_PASSED' || finding.gap
+const priorityOrder = { HIGH: 0, MEDIUM: 1, LOW: 2 }
+function attentionFirst(items: Finding[]) {
+  return [...items].sort((a, b) => Number(needsAttention(b)) - Number(needsAttention(a)) || priorityOrder[a.priority] - priorityOrder[b.priority])
+}
+type FindingFilter = 'ALL' | 'ATTENTION' | 'MISSING_EVIDENCE' | 'PASSED'
+const findingFilters: { value: FindingFilter; label: string }[] = [
+  { value: 'ALL', label: 'All findings' }, { value: 'ATTENTION', label: 'Needs attention' },
+  { value: 'MISSING_EVIDENCE', label: 'Missing evidence' }, { value: 'PASSED', label: 'Passed' },
+]
+function matchesFindingFilter(f: Finding, filter: FindingFilter) {
+  return filter === 'ALL' || (filter === 'ATTENTION' ? needsAttention(f) : filter === 'MISSING_EVIDENCE' ? f.gap || f.evaluation === 'MISSING_EVIDENCE' : f.evaluation === 'CHECK_PASSED')
+}
 function Dashboard({ navigate, notes, inspect }: { navigate: (v: View) => void; notes: ReviewNotes; inspect: (id: string) => void }) {
   const { findings, mission, review } = useApp()
-  const [filter, setFilter] = useState<'ALL' | Diff | 'MISSING_EVIDENCE'>('ALL'); const [subsystem, setSubsystem] = useState('ALL'); const [priority, setPriority] = useState('ALL'); const [query, setQuery] = useState('')
-  const filtered = useMemo(() => findings.filter(f => (filter === 'ALL' || (filter === 'MISSING_EVIDENCE' ? f.gap : f.status === filter)) && (subsystem === 'ALL' || f.subsystem === subsystem) && (priority === 'ALL' || f.priority === priority) && `${f.id} ${f.title} ${f.subsystem}`.toLowerCase().includes(query.toLowerCase())), [filter, subsystem, priority, query])
+  const [filter, setFilter] = useState<FindingFilter>('ALL')
+  const [change, setChange] = useState<'ALL' | Diff>('ALL')
+  const [subsystem, setSubsystem] = useState('ALL'), [priority, setPriority] = useState('ALL'), [query, setQuery] = useState('')
+  const filtered = useMemo(() => attentionFirst(findings).filter(f => matchesFindingFilter(f, filter) && (change === 'ALL' || f.status === change) && (subsystem === 'ALL' || f.subsystem === subsystem) && (priority === 'ALL' || f.priority === priority) && `${f.id} ${f.title} ${f.subsystem}`.toLowerCase().includes(query.trim().toLowerCase())), [findings, filter, change, subsystem, priority, query])
   const count = summarize(findings, notes)
-  return <main className="inner-page page-shell"><div className="dashboard-head"><div><span className="eyebrow">{mission.name}</span><h1>Mission overview</h1><p>{mission.baseline ? 'Compared with your previous review' : 'First review'} · {new Date(mission.timestamp).toLocaleString()}</p></div><button className="report-button" onClick={() => navigate('report')}><FileText size={16} /> View report</button></div><section className="review-totals" aria-label="Review overview"><div className="review-stat passed"><span>Checks passed</span><strong>{count.passed}</strong></div><div className="review-stat attention"><span>Needs attention</span><strong>{count.review}</strong></div><div className="review-stat gaps"><span>Evidence gaps</span><strong>{count.gaps}</strong></div><div className="review-stat dispositions"><span>Reviewed</span><strong>{count.reviewed}<small> / {count.total}</small></strong></div></section><div className="subsystem-grid">{subsystems.map(name => { const items = findings.filter(f => f.subsystem === name), c = summarize(items); const open = c.review + c.gaps; return <button aria-pressed={subsystem === name} className={`subsystem-card ${c.review ? 'red' : c.gaps ? 'amber' : 'green'} ${subsystem === name ? 'active-subsystem' : ''}`} key={name} onClick={() => setSubsystem(subsystem === name ? 'ALL' : name)}><span className="eyebrow">{name}</span><strong>{open}</strong><small>{c.review} REVIEW / {c.gaps} GAPS</small><span className="help-text">{c.passed} passed</span></button> })}</div><section className="findings-section"><div className="findings-head"><div><span className="eyebrow">FINDINGS / {count.total} TOTAL</span><h2>What changed</h2></div><div className="filter-tabs">{(['ALL', 'NEW', 'RESOLVED', 'CHANGED', 'UNRESOLVED', 'UNCHANGED', 'NOT_COMPARABLE', 'MISSING_EVIDENCE'] as const).map(s => <button aria-pressed={filter === s} className={filter === s ? 'selected' : ''} key={s} onClick={() => setFilter(s)}>{statusLabel(s)} <b>{s === 'ALL' ? count.total : findings.filter(f => s === 'MISSING_EVIDENCE' ? f.gap : f.status === s).length}</b></button>)}</div></div><div className="filter-controls"><label className="search-field"><Search size={18} /><input aria-label="Search findings" placeholder="Search findings…" value={query} onChange={e => setQuery(e.target.value)} /></label><select aria-label="Filter subsystem" value={subsystem} onChange={e => setSubsystem(e.target.value)}><option value="ALL">All subsystems</option>{subsystems.map(s => <option key={s}>{s}</option>)}</select><select aria-label="Filter priority" value={priority} onChange={e => setPriority(e.target.value)}><option value="ALL">All priorities</option><option value="HIGH">High priority</option><option value="MEDIUM">Medium priority</option><option value="LOW">Low priority</option></select><span className="help-text" role="status">Showing {filtered.length} of {findings.length}</span>{(query || subsystem !== 'ALL' || priority !== 'ALL' || filter !== 'ALL') && <button className="text-button" onClick={() => { setQuery(''); setSubsystem('ALL'); setPriority('ALL'); setFilter('ALL') }}>Clear filters</button>}</div><div className="table-wrap"><table><caption className="sr-only">Mission findings with comparison, check results, trends, and evidence confidence</caption><thead><tr><th scope="col">Change / check</th><th scope="col">Finding</th><th scope="col">Previous → current</th><th scope="col">Trend</th><th scope="col">Evidence</th><th scope="col">Details</th></tr></thead><tbody>{filtered.map(f => <tr key={f.id}><td data-label="Change and check"><span className="diff-label">{statusLabel(f.status)}</span><EvaluationBadge finding={f} /></td><td data-label="Finding"><strong>{f.title}</strong><span>{statusLabel(f.subsystem)} · {statusLabel(f.priority)} priority</span>{notes[f.id] && <span>{statusLabel(notes[f.id].state)}</span>}</td><td data-label="Previous → current"><strong>{valueLabel(f.previous, f.unit)} → {valueLabel(f.current, f.unit)}</strong><span>{f.limit !== null ? f.ruleLabel || `Limit: ${f.limit} ${f.unit}` : f.ruleLabel || 'Required record unavailable'}</span></td><td data-label="Trend"><Trend finding={f} /></td><td data-label="Evidence confidence"><span className="confidence">{statusLabel(f.confidence)}</span></td><td className="mobile-inspect"><button aria-label={`Inspect ${f.id}`} className="inspect-button" onClick={() => inspect(f.id)}>Inspect <ArrowRight size={16} /></button></td></tr>)}</tbody></table>{!filtered.length && <div className="empty-state">No findings match these filters. Clear filters to see all items.</div>}</div></section><section className="panel cross-signal"><h2>Review summary</h2><SummaryNotice /><MarkdownText text={review?.narrative.summary ?? ''} />{!!review?.narrative.relationships.length && <details><summary>Related findings</summary>{review.narrative.relationships.map((r,i) => <article key={i}>{r.hypothesis && <b>Possible relationship</b>}<p>{r.text}</p><div className="suggestions">{r.findingIds.map(id => <button key={id} onClick={() => inspect(id)}>{id}</button>)}</div></article>)}</details>}</section></main>
+  const advancedCount = Number(change !== 'ALL') + Number(subsystem !== 'ALL') + Number(priority !== 'ALL')
+  const hasFilters = Boolean(query || advancedCount || filter !== 'ALL')
+  function clearFilters() { setQuery(''); setSubsystem('ALL'); setPriority('ALL'); setChange('ALL'); setFilter('ALL') }
+  return <main className="inner-page page-shell">
+    <div className="dashboard-head"><div><span className="eyebrow">{mission.name}</span><h1>Mission overview</h1><p>{mission.baseline ? 'Compared with your previous review' : 'First review'} · {new Date(mission.timestamp).toLocaleString()}</p></div><button className="report-button" onClick={() => navigate('report')}><FileText size={16} /> View report</button></div>
+    <section className="review-totals" aria-label="Review overview">
+      <div className="review-stat passed"><span>Checks passed</span><strong>{count.passed}</strong></div><div className="review-stat attention"><span>Needs attention</span><strong>{count.review}</strong></div><div className="review-stat gaps"><span>Evidence gaps</span><strong>{count.gaps}</strong></div><div className="review-stat dispositions"><span>Reviewed</span><strong>{count.reviewed}<small> / {count.total}</small></strong></div>
+    </section>
+    <div className="subsystem-grid">{subsystems.map(name => {
+      const items = findings.filter(f => f.subsystem === name), c = summarize(items), open = items.filter(needsAttention).length
+      return <button aria-pressed={subsystem === name} className={`subsystem-card ${c.review ? 'red' : c.gaps ? 'amber' : 'green'} ${subsystem === name ? 'active-subsystem' : ''}`} key={name} onClick={() => setSubsystem(subsystem === name ? 'ALL' : name)}><span className="eyebrow">{name}</span><strong>{open}</strong><small>{c.review} REVIEW / {c.gaps} GAPS</small><span className="help-text">{c.passed} passed</span></button>
+    })}</div>
+    <section className="findings-section">
+      <div className="findings-head"><div><span className="eyebrow">FINDINGS / {count.total} TOTAL</span><h2>Review findings</h2><p className="findings-order">Needs attention first · Highest priority at the top</p></div>
+        <div className="filter-tabs" aria-label="Finding results">{findingFilters.map(({ value, label }) => <button aria-pressed={filter === value} className={filter === value ? 'selected' : ''} key={value} onClick={() => setFilter(value)}>{label} <b>{findings.filter(f => matchesFindingFilter(f, value)).length}</b></button>)}</div>
+      </div>
+      <div className="filter-controls">
+        <label className="search-field"><Search size={18} /><input aria-label="Search findings" placeholder="Search findings…" value={query} onChange={e => setQuery(e.target.value)} /></label>
+        <span className="help-text" role="status">Showing {filtered.length} of {findings.length}</span>
+        {hasFilters && <button className="text-button" onClick={clearFilters}>Clear filters</button>}
+      </div>
+      <details className="advanced-filters">
+        <summary>More filters{advancedCount > 0 && <span className="active-filter-count">{advancedCount} active</span>}</summary>
+        <div className="advanced-filter-fields">
+          <label>Subsystem<select aria-label="Filter subsystem" value={subsystem} onChange={e => setSubsystem(e.target.value)}><option value="ALL">All subsystems</option>{subsystems.map(s => <option key={s}>{s}</option>)}</select></label>
+          <label>Priority<select aria-label="Filter priority" value={priority} onChange={e => setPriority(e.target.value)}><option value="ALL">All priorities</option><option value="HIGH">High priority</option><option value="MEDIUM">Medium priority</option><option value="LOW">Low priority</option></select></label>
+          <label>Change since previous review<select aria-label="Filter change" value={change} onChange={e => setChange(e.target.value as 'ALL' | Diff)}><option value="ALL">All changes</option>{(['NEW', 'RESOLVED', 'CHANGED', 'UNRESOLVED', 'UNCHANGED', 'NOT_COMPARABLE'] as const).map(s => <option value={s} key={s}>{statusLabel(s)}</option>)}</select></label>
+        </div>
+      </details>
+      <div className="table-wrap"><table><caption className="sr-only">Mission findings, ordered by attention needed and configured priority, with comparison, check results, trends, and evidence confidence</caption><thead><tr><th scope="col">Change / check</th><th scope="col">Finding</th><th scope="col">Previous → current</th><th scope="col">Trend</th><th scope="col">Evidence</th><th scope="col">Details</th></tr></thead><tbody>{filtered.map(f => <tr key={f.id} data-finding-id={f.id}><td data-label="Change and check"><span className="diff-label">{statusLabel(f.status)}</span><EvaluationBadge finding={f} /></td><td data-label="Finding"><strong>{f.title}</strong><span>{statusLabel(f.subsystem)} · {statusLabel(f.priority)} priority</span>{notes[f.id] && <span>{statusLabel(notes[f.id].state)}</span>}</td><td data-label="Previous → current"><strong>{valueLabel(f.previous, f.unit)} → {valueLabel(f.current, f.unit)}</strong><span>{f.limit !== null ? f.ruleLabel || `Limit: ${f.limit} ${f.unit}` : f.ruleLabel || 'Required record unavailable'}</span></td><td data-label="Trend"><Trend finding={f} /></td><td data-label="Evidence confidence"><span className="confidence">{statusLabel(f.confidence)}</span></td><td className="mobile-inspect"><button aria-label={`Inspect ${f.id}`} className="inspect-button" onClick={() => inspect(f.id)}>Inspect <ArrowRight size={16} /></button></td></tr>)}</tbody></table>{!filtered.length && <div className="empty-state">{hasFilters ? <>No findings match these filters. <button className="text-button" onClick={clearFilters}>Clear filters</button> to see all items.</> : 'No findings are available for this review.'}</div>}</div>
+    </section>
+    <section className="panel cross-signal"><h2>Review summary</h2><SummaryNotice /><MarkdownText text={review?.narrative.summary ?? ''} />{!!review?.narrative.relationships.length && <details><summary>Related findings</summary>{review.narrative.relationships.map((r,i) => <article key={i}>{r.hypothesis && <b>Possible relationship</b>}<p>{r.text}</p><div className="suggestions">{r.findingIds.map(id => <button key={id} onClick={() => inspect(id)}>{id}</button>)}</div></article>)}</details>}</section>
+  </main>
+}
+function ReportFinding({ finding: f, note, inspect }: { finding: Finding; note?: ReviewNotes[string]; inspect: (id: string) => void }) {
+  return <article className={`report-card report-finding ${needsAttention(f) ? 'report-attention' : ''}`} data-finding-id={f.id}>
+    <div className="report-card-head"><h3>{f.title}</h3><EvaluationBadge finding={f} /></div>
+    <p className="report-finding-meta">{statusLabel(f.priority)} priority · {statusLabel(f.subsystem)} · {f.id}</p>
+    <p>{f.impact}</p>
+    <p className="report-next-step"><b>Next step:</b> {f.action}</p>
+    <details className="report-evidence">
+      <summary>Evidence and review details</summary>
+      <div className="report-evidence-content">
+        <p><b>Configured requirement:</b> {f.requirement}</p>
+        <p><b>Observations:</b> {valueLabel(f.previous, f.unit)} → {valueLabel(f.current, f.unit)}. <b>Trend:</b> {statusLabel(f.trend)}. <b>Change:</b> {statusLabel(f.status)}.</p>
+        <p><b>Evidence confidence:</b> {statusLabel(f.confidence)}. {f.confidenceReasons.join(' ')}</p>
+        {f.source ? <blockquote className="source-excerpt">{f.source.excerpt}<cite>{f.source.title} {f.source.section}</cite></blockquote> : <p className="error-text">Supporting document missing.</p>}
+        <p><b>Reviewer status:</b> {statusLabel(note?.state ?? 'PENDING')}</p>
+        {note && <p className="review-note-text">{note.note || 'No note added'}<br /><small>Saved: {new Date(note.savedAt).toLocaleString()}</small></p>}
+      </div>
+    </details>
+    <button className="inspect-button" onClick={() => inspect(f.id)}>Review finding <ArrowRight size={16} /></button>
+  </article>
 }
 function Report({ navigate, notes, inspect }: { navigate: (v: View) => void; notes: ReviewNotes; inspect: (id: string) => void }) {
   const { review, findings, mission } = useApp()
   const stats = summarize(findings, notes)
+  const ordered = attentionFirst(findings), attention = ordered.filter(needsAttention), passed = ordered.filter(f => !needsAttention(f))
+  const reportRef = useRef<HTMLElement>(null)
+  // Browser printing includes all evidence and passed checks, then restores the screen layout.
+  useEffect(() => {
+    let priorOpen: { element: HTMLDetailsElement; open: boolean }[] | null = null
+    function beforePrint() {
+      if (priorOpen) return
+      priorOpen = Array.from(reportRef.current?.querySelectorAll('details') ?? []).map(element => ({ element, open: element.open }))
+      priorOpen.forEach(({ element }) => { element.open = true })
+    }
+    function afterPrint() { priorOpen?.forEach(({ element, open }) => { element.open = open }); priorOpen = null }
+    window.addEventListener('beforeprint', beforePrint); window.addEventListener('afterprint', afterPrint)
+    return () => { afterPrint(); window.removeEventListener('beforeprint', beforePrint); window.removeEventListener('afterprint', afterPrint) }
+  }, [])
   function exportMarkdown() { if (review) { const a = document.createElement('a'); a.href = `/api/reviews/${review.id}/export`; a.download = ''; a.click() } }
-  return <main className="inner-page page-shell report-page"><div className="report-top"><div><span className="eyebrow">{mission.simulated ? 'DEMO MISSION' : 'MISSION REVIEW'}</span><h1>Mission review report</h1><p>{mission.name} · {new Date(mission.timestamp).toLocaleString()}</p></div><div className="report-actions"><button className="secondary-cta" onClick={() => navigate('dashboard')}><ArrowLeft size={16} /> Back to findings</button><button className="secondary-cta" onClick={exportMarkdown}><Download size={16} /> Download report</button><button className="primary-small" onClick={() => window.print()}>Print / PDF</button></div></div><div className="report-summary">{[[stats.passed, 'CHECKS PASSED'], [stats.review, 'NEEDS ATTENTION'], [stats.gaps, 'EVIDENCE GAPS'], [`${stats.reviewed}/${stats.total}`, 'REVIEWED']].map(([n, label]) => <div className="summary-stat" key={label}><span>{label}</span><strong>{n}</strong></div>)}</div><section className="report-card report-intro"><h2>Executive summary</h2><SummaryNotice /><MarkdownText text={review?.narrative.summary ?? ''} /></section>{findings.map(f => <article className="report-card report-finding" key={f.id}><div className="report-card-head"><h2>{f.title}</h2><EvaluationBadge finding={f} /></div><p><b>{f.id}</b> · {statusLabel(f.subsystem)} · {statusLabel(f.status)} · {statusLabel(f.priority)} priority</p><p>{f.requirement}</p><p><b>Observations:</b> {valueLabel(f.previous, f.unit)} → {valueLabel(f.current, f.unit)}. <b>Trend:</b> {statusLabel(f.trend)}.</p><p>{f.impact}</p><p><b>Next step:</b> {f.action}</p><details><summary>Evidence confidence: {statusLabel(f.confidence)}</summary><p>{f.confidenceReasons.join(' ')}</p></details>{f.source ? <blockquote className="source-excerpt">{f.source.excerpt}<cite>{f.source.title} {f.source.section}</cite></blockquote> : <p className="error-text">Supporting document missing.</p>}<p><b>Reviewer status:</b> {statusLabel(notes[f.id]?.state ?? 'PENDING')}</p>{notes[f.id] && <p className="review-note-text">{notes[f.id].note || 'No note added'}<br /><small>Saved: {new Date(notes[f.id].savedAt).toLocaleString()}</small></p>}<button className="inspect-button" onClick={() => inspect(f.id)}>Review finding <ArrowRight size={16} /></button></article>)}<ReviewNotices /><p className="report-disclaimer">Human engineering review required. This tool does not approve or certify launches.</p></main>
+  return <main ref={reportRef} className="inner-page page-shell report-page">
+    <div className="report-top"><div><span className="eyebrow">{mission.simulated ? 'DEMO MISSION' : 'MISSION REVIEW'}</span><h1>Mission review report</h1><p>{mission.name} · {new Date(mission.timestamp).toLocaleString()}</p></div><div className="report-actions"><button className="secondary-cta" onClick={() => navigate('dashboard')}><ArrowLeft size={16} /> Back to findings</button><button className="secondary-cta" onClick={exportMarkdown}><Download size={16} /> Download report</button><button className="primary-small" onClick={() => window.print()}>Print / PDF</button></div></div>
+    <div className="report-summary">{[[stats.passed, 'CHECKS PASSED'], [stats.review, 'NEEDS ATTENTION'], [stats.gaps, 'EVIDENCE GAPS'], [`${stats.reviewed}/${stats.total}`, 'REVIEWED']].map(([n, label]) => <div className="summary-stat" key={label}><span>{label}</span><strong>{n}</strong></div>)}</div>
+    <section className="report-card report-intro"><h2>Executive summary</h2><SummaryNotice /><MarkdownText text={review?.narrative.summary ?? ''} /></section>
+    <section className="report-key-findings" aria-labelledby="attention-heading">
+      <div className="report-section-heading"><h2 id="attention-heading">Needs attention <span>{attention.length}</span></h2></div>
+      {attention.length ? attention.map(f => <ReportFinding finding={f} note={notes[f.id]} inspect={inspect} key={f.id} />) : <p className="report-empty">{findings.length ? 'No checks are flagged for attention. Passed checks and their evidence are available below.' : 'No findings are available for this review.'}</p>}
+    </section>
+    {passed.length > 0 && <details className="report-passed"><summary>Passed checks <span>{passed.length}</span></summary><div>{passed.map(f => <ReportFinding finding={f} note={notes[f.id]} inspect={inspect} key={f.id} />)}</div></details>}
+    <ReviewNotices /><p className="report-disclaimer">Human engineering review required. This tool does not approve or certify launches.</p>
+  </main>
 }
 export default function Page() {
  const [view, setView] = useState<View>('landing'); const [review, setReview] = useState<ReviewRecord | null>(null); const [health, setHealth] = useState<AppData['health']>(null); const [history, setHistory] = useState<{ id: string; name: string; status: string; createdAt: string }[]>([]); const [packages, setPackages] = useState<PackageListItem[]>([])
