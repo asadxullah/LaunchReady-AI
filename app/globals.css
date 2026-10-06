@@ -308,3 +308,42 @@ td span:not(.status-pill):not(.trend):not(.confidence) { font-size: 13px; }
 .intake-side > p { line-height: 1.65; margin: 10px 0; }
 .intake-document summary::after { content: "⌄"; color: var(--violet); margin-left: 8px; font-size: 18px; }
 .intake-document[open] summary::after { transform: rotate(180deg); }
+
+/* Decorative Aster-2 motion; labels and review counts remain stationary. */
+.orbital-visual .orbit-b::after {
+  content: "";
+  position: absolute;
+  top: -3px;
+  left: calc(50% - 2px);
+  width: 4px;
+  height: 4px;
+  border-radius: 50%;
+  background: var(--cyan);
+  box-shadow: 0 0 8px rgba(101, 217, 232, .45);
+  opacity: .65;
+}
+@media screen and (prefers-reduced-motion: no-preference) {
+  .orbital-visual .orbit-a { animation: aster-inner-orbit 36s linear infinite; }
+  .orbital-visual .orbit-b { animation: aster-outer-orbit 45s linear infinite; }
+  .orbital-visual .orbit-core::before {
+    content: "";
+    position: absolute;
+    inset: -1px;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow: 0 0 48px rgba(167, 139, 250, .2), inset 0 0 22px rgba(167, 139, 250, .12);
+    animation: aster-core-glow 6s ease-in-out infinite;
+  }
+}
+@keyframes aster-inner-orbit {
+  from { transform: rotate(-28deg); }
+  to { transform: rotate(332deg); }
+}
+@keyframes aster-outer-orbit {
+  from { transform: rotate(64deg); }
+  to { transform: rotate(-296deg); }
+}
+@keyframes aster-core-glow {
+  0%, 100% { opacity: .25; }
+  50% { opacity: .85; }
+}
